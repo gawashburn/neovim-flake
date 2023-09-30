@@ -2,7 +2,6 @@
 { pkgs, ... }:
 {
   # Neovim configuration
-  #neovim = {
     enable = true;
     defaultEditor = true;
     withNodeJs = true;
@@ -103,16 +102,20 @@
         sign define DiagnosticSignHint text=💡  linehl= texthl=DiagnosticSignHint numhl= 
       ]]
 
+      local gs = require("gitsigns")
+
       -- IDE keybindings
       vim.keymap.set('n', '<leader>h', '<Cmd>lua vim.lsp.buf.hover()<CR>', bufopts)
       vim.keymap.set('n', '<leader>d', '<Cmd>lua vim.lsp.buf.declaration()<CR>', bufopts)
       vim.keymap.set('n', '<leader>i', '<Cmd>lua vim.lsp.buf.definition()<CR>', bufopts)
       vim.keymap.set('n', '<leader>g', '<Cmd>Telescope live_grep<CR>', bufopts)
+      vim.keymap.set('n', '<leader>o', '<Cmd>Telescope lsp_dynamic_workspace_symbols<CR>', bufopts)
       vim.keymap.set('n', '<leader>r', '<Cmd>Telescope lsp_references<CR>', bufopts)
       vim.keymap.set('n', '<leader>f', '<Cmd>lua vim.lsp.buf.format()<CR>', bufopts)
       vim.keymap.set('n', '<leader>s', '<Cmd>lua vim.lsp.buf.signature_help()<CR>', bufopts)
       vim.keymap.set('n', '<leader>a', '<Cmd>CodeActionMenu<CR>', bufopts)
       vim.keymap.set('n', '<leader>t', '<Cmd>TroubleToggle<CR>', bufopts)
+      vim.keymap.set('n', '<leader>x', gs.reset_hunk, bufopts)
 
       -- Clangd setup
       local navic = require("nvim-navic")
@@ -236,6 +239,7 @@
      # None yet
     ]) ++ (with pkgs.vimPlugins; [
       camelcasemotion
+      vim-easymotion
       vim-highlightedyank
       oceanic-next
       lsp-colors-nvim
@@ -293,7 +297,17 @@
         type = "lua";
         config = ''
           require('gitsigns').setup {
+            current_line_blame = true,
+            current_line_blame_opts = {
+              virt_text = true,
+              virt_text_pos = 'right_align', -- 'eol' | 'overlay' | 'right_align'
+                delay = 1000,
+              ignore_whitespace = false,
+            }
           }
+
+          on_attach = function(bufnr)
+          end
         '';
       }
       impatient-nvim
@@ -426,5 +440,4 @@
       ripgrep
       fd
     ];
- # };
 }
