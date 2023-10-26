@@ -105,6 +105,7 @@
       local gs = require("gitsigns")
 
       -- IDE keybindings
+      vim.keymap.set('n', '<leader>z', '<Cmd>Telescope buffers<CR>', bufopts)
       vim.keymap.set('n', '<leader>h', '<Cmd>lua vim.lsp.buf.hover()<CR>', bufopts)
       vim.keymap.set('n', '<leader>d', '<Cmd>lua vim.lsp.buf.declaration()<CR>', bufopts)
       vim.keymap.set('n', '<leader>i', '<Cmd>lua vim.lsp.buf.definition()<CR>', bufopts)
@@ -341,10 +342,7 @@
         plugin = indent-blankline-nvim;
         type = "lua";
         config = ''
-          require("indent_blankline").setup {
-            show_end_of_line = true,
-            space_char_blankline = " ",
-            show_current_context = true
+          require("ibl").setup {
           }
         '';
       }
