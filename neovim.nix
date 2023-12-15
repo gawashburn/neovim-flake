@@ -291,6 +291,7 @@
       telescope-lsp-handlers-nvim
       lsp-status-nvim
       lsp_signature-nvim
+      vim-codefmt
       nvim-web-devicons
       # git integration
       {
