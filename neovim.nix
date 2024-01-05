@@ -109,7 +109,7 @@
       vim.keymap.set('n', '<leader>h', '<Cmd>lua vim.lsp.buf.hover()<CR>', bufopts)
       vim.keymap.set('n', '<leader>d', '<Cmd>lua vim.lsp.buf.declaration()<CR>', bufopts)
       vim.keymap.set('n', '<leader>i', '<Cmd>lua vim.lsp.buf.definition()<CR>', bufopts)
-      vim.keymap.set('n', '<leader>g', '<Cmd>Telescope live_grep<CR>', bufopts)
+      vim.keymap.set('n', '<leader>g', ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>", bufopts)
       vim.keymap.set('n', '<leader>o', '<Cmd>Telescope lsp_dynamic_workspace_symbols<CR>', bufopts)
       vim.keymap.set('n', '<leader>r', '<Cmd>Telescope lsp_references<CR>', bufopts)
       vim.keymap.set('n', '<leader>f', '<Cmd>lua vim.lsp.buf.format()<CR>', bufopts)
@@ -304,6 +304,7 @@
       cmp_luasnip
       plenary-nvim
       telescope-nvim
+      telescope-live-grep-args-nvim
       telescope-lsp-handlers-nvim
       lsp-status-nvim
       lsp_signature-nvim
