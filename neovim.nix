@@ -264,11 +264,27 @@
               ['<C-Tab>'] = cmp.mapping.complete(),
               ['<CR>'] = cmp.mapping.confirm({ select = true }),
             }),
-          	snippet = {
-          		expand = function(args)
-          			require("luasnip").lsp_expand(args.body)
-	          	end,
-	          },
+            snippet = {
+              expand = function(args)
+                require("luasnip").lsp_expand(args.body)
+              end,
+            },
+            enabled = function()
+              -- Disable some completion in comments and string literals. 
+              -- This is essential for avoiding annoying completions when
+              -- trying to write normal text.
+              local context = require 'cmp.config.context'
+              -- Keep command mode completion enabled
+              if vim.api.nvim_get_mode().mode == 'c' then
+                return true
+              else
+                -- TODO Abstract out duplicated code?
+                return not context.in_treesitter_capture("comment")
+                   and not context.in_syntax_group("Comment")
+                   and not context.in_treesitter_capture("string")
+                   and not context.in_syntax_group("String")
+              end
+            end,
             sources = cmp.config.sources({
               { name = 'nvim_lsp' },
               { name = "luasnip" },
@@ -410,6 +426,9 @@
       }
     ]);
     extraPackages = with pkgs; [
+      # Allow opening in existing session
+      neovim-remote
+
       # Essentials
       nodePackages.npm
       nodePackages.neovim
