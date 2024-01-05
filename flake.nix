@@ -4,8 +4,6 @@
   inputs = {};
 
   outputs = { self }: {
-    foo = {
     neovim = import ./neovim.nix;
-    };
   };
 }

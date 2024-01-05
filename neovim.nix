@@ -50,6 +50,9 @@
       set textwidth=72
       set formatoptions=qrn1
 
+      " The time to wait for calling CursorHold
+      set updatetime=2000
+
       set matchpairs+=<:>
 
       "Change the leader key
@@ -104,15 +107,21 @@
 
       local gs = require("gitsigns")
 
+      vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+        silent = true,
+      })
+
       -- IDE keybindings
-      vim.keymap.set('n', '<leader>z', '<Cmd>Telescope buffers<CR>', bufopts)
-      vim.keymap.set('n', '<leader>h', '<Cmd>lua vim.lsp.buf.hover()<CR>', bufopts)
-      vim.keymap.set('n', '<leader>d', '<Cmd>lua vim.lsp.buf.declaration()<CR>', bufopts)
-      vim.keymap.set('n', '<leader>i', '<Cmd>lua vim.lsp.buf.definition()<CR>', bufopts)
+      vim.keymap.set('n', '<leader>b', '<Cmd>Telescope buffers<CR>', bufopts)
+      vim.keymap.set('n', '<leader>ci', '<Cmd>Telescope lsp_incoming_calls<CR>', bufopts)
+      vim.keymap.set('n', '<leader>co', '<Cmd>Telescope lsp_outgoing_calls<CR>', bufopts)
+      vim.keymap.set('n', '<leader>d', '<Cmd>Telescope lsp_definitions<CR>', bufopts)
+      vim.keymap.set('n', '<leader>i', '<Cmd>Telescope lsp_implementations<CR>', bufopts)
       vim.keymap.set('n', '<leader>g', ":lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>", bufopts)
       vim.keymap.set('n', '<leader>o', '<Cmd>Telescope lsp_dynamic_workspace_symbols<CR>', bufopts)
       vim.keymap.set('n', '<leader>r', '<Cmd>Telescope lsp_references<CR>', bufopts)
       vim.keymap.set('n', '<leader>f', '<Cmd>lua vim.lsp.buf.format()<CR>', bufopts)
+      vim.keymap.set('n', '<leader>z', '<Cmd>lua vim.lsp.buf.rename()<CR>', bufopts)
       vim.keymap.set('n', '<leader>s', '<Cmd>lua vim.lsp.buf.signature_help()<CR>', bufopts)
       vim.keymap.set('n', '<leader>a', '<Cmd>CodeActionMenu<CR>', bufopts)
       vim.keymap.set('n', '<leader>t', '<Cmd>TroubleToggle<CR>', bufopts)
@@ -121,6 +130,9 @@
       -- Clangd setup
       local navic = require("nvim-navic")
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
+      -- Hack around the fact that null-ls defaults to utf-16 for some reason,
+      -- and so we will get annoying complaints about the encoding type.
+      capabilities.offsetEncoding = { 'utf-16' }
       local clangd_ext_handler = require("lsp-status").extensions.clangd.setup()
       require('lspconfig')['clangd'].setup {
         cmd = {
@@ -227,22 +239,56 @@
        }
      }
 
-     -- Use internal formatting for bindings like gq.
-     vim.api.nvim_create_autocmd('LspAttach', { 
-       callback = function(args) 
-         vim.bo[args.buf].formatexpr = nil 
-       end, 
-     })
+    -- Use internal formatting for bindings like gq.
+    vim.api.nvim_create_autocmd('LspAttach', { 
+      callback = function(args) 
+        vim.bo[args.buf].formatexpr = nil 
+      end, 
+    })
 
+    -- Create an CursorHold callback to print hover information, if available
+    vim.api.nvim_create_autocmd('CursorHold', {
+      callback = function(args)
+        for _, client in ipairs(vim.lsp.get_active_clients()) do
+          if client.supports_method('textDocument/documentHighlight') then
+            local ts_utils = require 'nvim-treesitter.ts_utils'
+            local node = ts_utils.get_node_at_cursor()
+            if node then
+              --print("Node: ", node:type())
+              vim.lsp.buf.hover()
+            end
+          end
+        end
+      end,
+    })
     '';
 
-    plugins = (with pkgs.unstable.vimPlugins; [
+    plugins =
+    # As hoverhints-nvim doesn't yet appear to be in the default packaging?
+    # Unfortunately, it also does not seem to be all that useful just yet.
+    let
+      hoverhints-nvim = pkgs.vimUtils.buildVimPlugin {
+        pname = "hoverhints-nvim";
+        version = "2023-11-23";
+        src = builtins.fetchurl {
+          url = "https://github.com/soulis-1256/hoverhints.nvim/archive/86fad985b91fe454469108924c1cdb378cbae1ce.tar.gz";
+          sha256 = "0miq3dyjg948hg95x2k16vi9zhf9fkla53fk18x4aywbrm1zy0bm";
+        };
+      };
+    in
+    (with pkgs.unstable.vimPlugins; [
      # None yet
     ]) ++ (with pkgs.vimPlugins; [
       camelcasemotion
       vim-easymotion
       vim-highlightedyank
       oceanic-next
+      { plugin = hoverhints-nvim;
+        type = "lua";
+        config = ''
+          require("hoverhints").setup({})
+        '';
+      }
       lsp-colors-nvim
       nvim-treesitter.withAllGrammars
       # Comment/uncomment helper
