@@ -3,7 +3,8 @@
 {
   # Neovim configuration
     enable = true;
-    defaultEditor = true;
+    # Disable for now as we may wish to wrap nvim.
+    #defaultEditor = true;
     withNodeJs = true;
     extraConfig = ''
       if (has("termguicolors"))
@@ -127,6 +128,7 @@
       vim.keymap.set('n', '<leader>a', '<Cmd>CodeActionMenu<CR>', bufopts)
       vim.keymap.set('n', '<leader>t', '<Cmd>TroubleToggle<CR>', bufopts)
       vim.keymap.set('n', '<leader>x', gs.reset_hunk, bufopts)
+      vim.keymap.set('n', '<leader>/', '<Cmd>nohlsearch<CR>', bufopts)
 
       -- Clangd setup
       local navic = require("nvim-navic")
