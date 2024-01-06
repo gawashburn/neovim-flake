@@ -300,17 +300,36 @@
           require('Comment').setup()
         '';
       }
+      lspkind-nvim
       # Completion
       {
         plugin = nvim-cmp;
         type = "lua";
         config = ''
+          local lspkind = require('lspkind')
           local cmp = require('cmp')
           cmp.setup({
             mapping = cmp.mapping.preset.insert({
               ['<C-Tab>'] = cmp.mapping.complete(),
               ['<CR>'] = cmp.mapping.confirm({ select = true }),
             }),
+            formatting = {
+              format = lspkind.cmp_format({
+                mode = 'symbol_text',
+                menu = ({
+                  buffer = "[Buffer]",
+                  nvim_lsp = "[LSP]",
+                  luasnip = "[LuaSnip]",
+                  path = "[Path]",
+                  fish = "[fish]",
+                }),
+                maxwidth = 50,
+                ellipsis_char = '...', 
+                before = function (entry, vim_item)
+                  return vim_item
+                end
+              })
+            },
             snippet = {
               expand = function(args)
                 require("luasnip").lsp_expand(args.body)
