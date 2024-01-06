@@ -109,6 +109,7 @@
 
       vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
         silent = true,
+        border = 'rounded',
       })
 
       -- IDE keybindings
@@ -353,7 +354,14 @@
       telescope-live-grep-args-nvim
       telescope-lsp-handlers-nvim
       lsp-status-nvim
-      lsp_signature-nvim
+      {
+        plugin = lsp_signature-nvim;
+        type = "lua";
+        config = ''
+          local cfg = {}
+          require "lsp_signature".setup(cfg)
+        '';
+      }
       vim-codefmt
       nvim-web-devicons
       # git integration
