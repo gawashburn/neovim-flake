@@ -114,7 +114,6 @@
       })
 
       -- IDE keybindings
-      vim.keymap.set('n', '<leader>b', '<Cmd>Telescope buffers<CR>', bufopts)
       vim.keymap.set('n', '<leader>ci', '<Cmd>Telescope lsp_incoming_calls<CR>', bufopts)
       vim.keymap.set('n', '<leader>co', '<Cmd>Telescope lsp_outgoing_calls<CR>', bufopts)
       vim.keymap.set('n', '<leader>d', '<Cmd>Telescope lsp_definitions<CR>', bufopts)
@@ -128,6 +127,7 @@
       vim.keymap.set('n', '<leader>a', '<Cmd>CodeActionMenu<CR>', bufopts)
       vim.keymap.set('n', '<leader>t', '<Cmd>TroubleToggle<CR>', bufopts)
       vim.keymap.set('n', '<leader>x', gs.reset_hunk, bufopts)
+      vim.keymap.set('n', '<leader>q', '<Cmd>Telescope buffers<CR>', bufopts)
       vim.keymap.set('n', '<leader>/', '<Cmd>nohlsearch<CR>', bufopts)
 
       -- Clangd setup
