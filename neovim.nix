@@ -250,6 +250,8 @@
     })
 
     -- Create an CursorHold callback to print hover information, if available
+    -- Disable for now as this does not work as well has hoped.
+    --[[
     vim.api.nvim_create_autocmd('CursorHold', {
       callback = function(args)
         for _, client in ipairs(vim.lsp.get_active_clients()) do
@@ -264,6 +266,7 @@
         end
       end,
     })
+    --]]
     '';
 
     plugins =
