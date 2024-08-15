@@ -130,6 +130,8 @@
       vim.keymap.set('n', '<leader>q', '<Cmd>Telescope buffers<CR>', bufopts)
       vim.keymap.set('n', '<leader>/', '<Cmd>nohlsearch<CR>', bufopts)
 
+      -- pyright setup
+      require('lspconfig')['pyright'].setup {}
       -- Clangd setup
       local navic = require("nvim-navic")
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -198,20 +200,22 @@
       })
 
       -- nil setup
-      --local lsp_path = '${pkgs.nil}/bin/nil'
-      --require('lspconfig').nil_ls.setup {
-      --  autostart = true,
-      --  capabilities = caps,
-      -- cmd = { lsp_path },
-      --  settings = {
-      --    ['nil'] = {
-      --      testSetting = 42,
-      --      formatting = {
-      --        command = { "nixpkgs-fmt" },
-      --      },
-      --    },
-      --  },
-      -- }
+      --[[
+      local lsp_path = '${pkgs.nil}/bin/nil'
+      require('lspconfig').nil_ls.setup {
+        autostart = true,
+        capabilities = caps,
+       cmd = { lsp_path },
+        settings = {
+          ['nil'] = {
+            testSetting = 42,
+            formatting = {
+              command = { "nixpkgs-fmt" },
+            },
+          },
+        },
+       }
+      ]]--
 
      -- Status bar configuration
      require('lualine').setup {
@@ -267,6 +271,7 @@
       end,
     })
     --]]
+
     '';
 
     plugins =
@@ -507,6 +512,17 @@
     extraPackages = with pkgs; [
       # Allow opening in existing session
       neovim-remote
+
+      # Python
+      (python3.withPackages (ps: with ps; [
+        setuptools # Required by pylama for some reason
+        pylama
+        black
+        isort
+        yamllint
+        debugpy
+      ]))
+      pyright
 
       # Essentials
       nodePackages.npm
