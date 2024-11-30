@@ -509,7 +509,7 @@
       neovim-remote
 
       # Essentials
-      #nodePackages.npm
+      nodePackages.npm
       #nodePackages.neovim
 
       # Nix
