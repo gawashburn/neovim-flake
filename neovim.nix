@@ -509,8 +509,8 @@
       neovim-remote
 
       # Essentials
-      nodePackages.npm
-      nodePackages.neovim
+      #nodePackages.npm
+      #nodePackages.neovim
 
       # Nix
       statix
