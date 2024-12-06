@@ -487,7 +487,8 @@
       pyright
 
       # Essentials
-      nodePackages.npm
+      # nodePackages.npm
+      # nodePackages.neovim
 
       # Nix
       statix
