@@ -506,8 +506,8 @@
       shellharden
 
       # Additional
-      nodePackages.bash-language-server
-      nodePackages.yaml-language-server
+      # nodePackages.bash-language-server
+      # nodePackages.yaml-language-server
       codespell
       gitlint
 
