@@ -252,41 +252,9 @@
         vim.bo[args.buf].formatexpr = nil 
       end, 
     })
-
-    -- Create an CursorHold callback to print hover information, if available
-    -- Disable for now as this does not work as well has hoped.
-    --[[
-    vim.api.nvim_create_autocmd('CursorHold', {
-      callback = function(args)
-        for _, client in ipairs(vim.lsp.get_active_clients()) do
-          if client.supports_method('textDocument/documentHighlight') then
-            local ts_utils = require 'nvim-treesitter.ts_utils'
-            local node = ts_utils.get_node_at_cursor()
-            if node then
-              --print("Node: ", node:type())
-              vim.lsp.buf.hover()
-            end
-          end
-        end
-      end,
-    })
-    --]]
-
     '';
 
     plugins =
-    # As hoverhints-nvim doesn't yet appear to be in the default packaging?
-    # Unfortunately, it also does not seem to be all that useful just yet.
-    let
-      hoverhints-nvim = pkgs.vimUtils.buildVimPlugin {
-        pname = "hoverhints-nvim";
-        version = "2023-11-23";
-        src = builtins.fetchurl {
-          url = "https://github.com/soulis-1256/hoverhints.nvim/archive/86fad985b91fe454469108924c1cdb378cbae1ce.tar.gz";
-          sha256 = "0miq3dyjg948hg95x2k16vi9zhf9fkla53fk18x4aywbrm1zy0bm";
-        };
-      };
-    in
     (with pkgs.unstable.vimPlugins; [
      # None yet
     ]) ++ (with pkgs.vimPlugins; [
@@ -294,12 +262,6 @@
       vim-easymotion
       vim-highlightedyank
       oceanic-next
-      { plugin = hoverhints-nvim;
-        type = "lua";
-        config = ''
-          require("hoverhints").setup({})
-        '';
-      }
       lsp-colors-nvim
       nvim-treesitter.withAllGrammars
       # Comment/uncomment helper
@@ -526,7 +488,6 @@
 
       # Essentials
       nodePackages.npm
-      nodePackages.neovim
 
       # Nix
       statix
