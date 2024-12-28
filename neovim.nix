@@ -520,7 +520,7 @@
 
       # C, C++
       clang-tools
-      cppcheck
+      #cppcheck
 
       # Shell scripting
       shfmt
