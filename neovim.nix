@@ -130,6 +130,8 @@
       vim.keymap.set('n', '<leader>q', '<Cmd>Telescope buffers<CR>', bufopts)
       vim.keymap.set('n', '<leader>/', '<Cmd>nohlsearch<CR>', bufopts)
 
+      -- pyright setup
+      require('lspconfig')['pyright'].setup {}
       -- Clangd setup
       local navic = require("nvim-navic")
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -198,20 +200,22 @@
       })
 
       -- nil setup
-      --local lsp_path = '${pkgs.nil}/bin/nil'
-      --require('lspconfig').nil_ls.setup {
-      --  autostart = true,
-      --  capabilities = caps,
-      -- cmd = { lsp_path },
-      --  settings = {
-      --    ['nil'] = {
-      --      testSetting = 42,
-      --      formatting = {
-      --        command = { "nixpkgs-fmt" },
-      --      },
-      --    },
-      --  },
-      -- }
+      --[[
+      local lsp_path = '${pkgs.nil}/bin/nil'
+      require('lspconfig').nil_ls.setup {
+        autostart = true,
+        capabilities = caps,
+       cmd = { lsp_path },
+        settings = {
+          ['nil'] = {
+            testSetting = 42,
+            formatting = {
+              command = { "nixpkgs-fmt" },
+            },
+          },
+        },
+       }
+      ]]--
 
      -- Status bar configuration
      require('lualine').setup {
@@ -248,40 +252,9 @@
         vim.bo[args.buf].formatexpr = nil 
       end, 
     })
-
-    -- Create an CursorHold callback to print hover information, if available
-    -- Disable for now as this does not work as well has hoped.
-    --[[
-    vim.api.nvim_create_autocmd('CursorHold', {
-      callback = function(args)
-        for _, client in ipairs(vim.lsp.get_active_clients()) do
-          if client.supports_method('textDocument/documentHighlight') then
-            local ts_utils = require 'nvim-treesitter.ts_utils'
-            local node = ts_utils.get_node_at_cursor()
-            if node then
-              --print("Node: ", node:type())
-              vim.lsp.buf.hover()
-            end
-          end
-        end
-      end,
-    })
-    --]]
     '';
 
     plugins =
-    # As hoverhints-nvim doesn't yet appear to be in the default packaging?
-    # Unfortunately, it also does not seem to be all that useful just yet.
-    let
-      hoverhints-nvim = pkgs.vimUtils.buildVimPlugin {
-        pname = "hoverhints-nvim";
-        version = "2023-11-23";
-        src = builtins.fetchurl {
-          url = "https://github.com/soulis-1256/hoverhints.nvim/archive/86fad985b91fe454469108924c1cdb378cbae1ce.tar.gz";
-          sha256 = "0miq3dyjg948hg95x2k16vi9zhf9fkla53fk18x4aywbrm1zy0bm";
-        };
-      };
-    in
     (with pkgs.unstable.vimPlugins; [
      # None yet
     ]) ++ (with pkgs.vimPlugins; [
@@ -289,12 +262,6 @@
       vim-easymotion
       vim-highlightedyank
       oceanic-next
-      { plugin = hoverhints-nvim;
-        type = "lua";
-        config = ''
-          require("hoverhints").setup({})
-        '';
-      }
       lsp-colors-nvim
       nvim-treesitter.withAllGrammars
       # Comment/uncomment helper
@@ -508,9 +475,20 @@
       # Allow opening in existing session
       neovim-remote
 
+      # Python
+      (python3.withPackages (ps: with ps; [
+        setuptools # Required by pylama for some reason
+        pylama
+        black
+        isort
+        yamllint
+        debugpy
+      ]))
+      pyright
+
       # Essentials
-      nodePackages.npm
-      #nodePackages.neovim
+      # nodePackages.npm
+      # nodePackages.neovim
 
       # Nix
       statix
@@ -528,8 +506,8 @@
       shellharden
 
       # Additional
-      nodePackages.bash-language-server
-      nodePackages.yaml-language-server
+      # nodePackages.bash-language-server
+      # nodePackages.yaml-language-server
       codespell
       gitlint
 
