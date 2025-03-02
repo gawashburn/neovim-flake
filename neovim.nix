@@ -180,9 +180,9 @@
 
       -- nixd setup
       nvim_lsp.nixd.setup({
-      	on_attach = function(bufnr)
+      	on_attach = function(args)
           vim.api.nvim_create_autocmd("CursorHold", {
-        		buffer = bufnr,
+        		buffer = args.buf,
         		callback = function()
         			local opts = {
         				focusable = false,
