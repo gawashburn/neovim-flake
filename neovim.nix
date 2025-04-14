@@ -434,7 +434,7 @@
       }
       # Language server support.  Without the server.
       {
-        plugin = null-ls-nvim;
+        plugin = none-ls-nvim;
         type = "lua";
         config = ''
           local null_ls = require("null-ls")
