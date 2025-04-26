@@ -17,8 +17,9 @@
       " Enable spell checking
       set spell
 
-      " Show line numbers
+      " Show the line number plus relative line numbers
       set number
+      set relativenumber
 
       " Highlight the line where cursor is located
       set cursorline
