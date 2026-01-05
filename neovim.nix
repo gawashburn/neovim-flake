@@ -131,16 +131,22 @@
       vim.keymap.set('n', '<leader>q', '<Cmd>Telescope buffers<CR>', bufopts)
       vim.keymap.set('n', '<leader>/', '<Cmd>nohlsearch<CR>', bufopts)
 
-      -- pyright setup
-      require('lspconfig')['pyright'].setup {}
-      -- Clangd setup
+      -- LSP setup using vim.lsp.config (nvim 0.11+)
       local navic = require("nvim-navic")
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
       -- Hack around the fact that null-ls defaults to utf-16 for some reason,
       -- and so we will get annoying complaints about the encoding type.
       capabilities.offsetEncoding = { 'utf-16' }
+
+      -- pyright setup
+      vim.lsp.enable('pyright')
+
+      -- bashls setup
+      vim.lsp.enable('bashls')
+
+      -- clangd setup
       local clangd_ext_handler = require("lsp-status").extensions.clangd.setup()
-      require('lspconfig')['clangd'].setup {
+      vim.lsp.config('clangd', {
         cmd = {
          "clangd",
          "--compile-commands-dir=/local/home/washbug/padb",
@@ -154,50 +160,56 @@
          "--suggest-missing-includes",
          "--enable-config"
         },
-        on_attach = function(client, bufnr)
-         navic.attach(client, bufnr)
-        end,
         capabilities = capabilities,
         init_options = {
-          clangdFileStatus = true, -- Provides information about activity on clangd’s per-file worker thread
+          clangdFileStatus = true,
           usePlaceholders = true,
           completeUnimported = true,
           semanticHighlighting = true,
         },
         handlers = clangd_ext_handler,
         filetypes = { "c", "cpp", "hpp", "h"}
-      }
-
-      local nvim_lsp = require("lspconfig")
-
-      -- Add additional capabilities supported by nvim-cmp
-      -- nvim hasn't added foldingRange to default capabilities, users must add it manually
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities.textDocument.foldingRange = {
-      	dynamicRegistration = false,
-      	lineFoldingOnly = true,
-      }
+      })
+      vim.lsp.enable('clangd')
 
       -- nixd setup
-      nvim_lsp.nixd.setup({
-      	on_attach = function(args)
-          vim.api.nvim_create_autocmd("CursorHold", {
-        		buffer = args.buf,
-        		callback = function()
-        			local opts = {
-        				focusable = false,
-        				close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-        				border = "rounded",
-        				source = "always",
-        				prefix = " ",
-        				scope = "line",
-        			}
-        			vim.diagnostic.open_float(nil, opts)
-        		end,
-        	})
+      local nixd_capabilities = vim.lsp.protocol.make_client_capabilities()
+      nixd_capabilities.textDocument.foldingRange = {
+        dynamicRegistration = false,
+        lineFoldingOnly = true,
+      }
+      vim.lsp.config('nixd', { capabilities = nixd_capabilities })
+      vim.lsp.enable('nixd')
+
+      -- LspAttach autocmd for on_attach functionality
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client == nil then return end
+
+          -- Attach navic for clangd
+          if client.name == 'clangd' then
+            navic.attach(client, args.buf)
+          end
+
+          -- CursorHold diagnostic float for nixd
+          if client.name == 'nixd' then
+            vim.api.nvim_create_autocmd("CursorHold", {
+              buffer = args.buf,
+              callback = function()
+                local opts = {
+                  focusable = false,
+                  close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+                  border = "rounded",
+                  source = "always",
+                  prefix = " ",
+                  scope = "line",
+                }
+                vim.diagnostic.open_float(nil, opts)
+              end,
+            })
+          end
         end,
-      	capabilities = capabilities,
       })
 
       -- nil setup
@@ -442,12 +454,6 @@
           null_ls.setup({
               debug = false;
               sources = {
-              -- Shell
-              null_ls.builtins.formatting.shfmt,
-              null_ls.builtins.formatting.shellharden,
-              null_ls.builtins.diagnostics.shellcheck,
-              null_ls.builtins.code_actions.shellcheck,
-
               -- C/C++
               null_ls.builtins.diagnostics.cppcheck,
 
@@ -502,13 +508,9 @@
       #cppcheck
 
       # Shell scripting
-      shfmt
-      shellcheck
-      shellharden
+      nodePackages.bash-language-server
 
       # Additional
-      # nodePackages.bash-language-server
-      # nodePackages.yaml-language-server
       codespell
       gitlint
 
