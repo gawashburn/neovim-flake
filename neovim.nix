@@ -99,13 +99,17 @@
       -- Ensure that treesitter shared libraries can be found.
       vim.opt.runtimepath:append("${parsers}")
 
-      -- Configure the diagnostic symbols
-      vim.cmd [[ 
-        sign define DiagnosticSignError text=  linehl= texthl=DiagnosticSignError numhl= 
-        sign define DiagnosticSignWarn text= linehl= texthl=DiagnosticSignWarn numhl= 
-        sign define DiagnosticSignInfo text=  linehl= texthl=DiagnosticSignInfo numhl= 
-        sign define DiagnosticSignHint text=💡  linehl= texthl=DiagnosticSignHint numhl= 
-      ]]
+      -- Configure the diagnostic symbols (nvim 0.11+)
+      vim.diagnostic.config({
+        signs = {
+          text = {
+            [vim.diagnostic.severity.ERROR] = "🔴",
+            [vim.diagnostic.severity.WARN] = "🟡",
+            [vim.diagnostic.severity.INFO] = "🔵",
+            [vim.diagnostic.severity.HINT] = "💡",
+          },
+        },
+      })
 
       local gs = require("gitsigns")
 
@@ -145,29 +149,27 @@
       vim.lsp.enable('bashls')
 
       -- clangd setup
-      local clangd_ext_handler = require("lsp-status").extensions.clangd.setup()
       vim.lsp.config('clangd', {
         cmd = {
          "clangd",
-         "--compile-commands-dir=/local/home/washbug/padb",
          "--all-scopes-completion",
          "--recovery-ast",
          "--clang-tidy",
          "--background-index",
+         "--background-index-priority=normal",
          "-j=64",
-         "--log=verbose",
          "--cross-file-rename",
          "--suggest-missing-includes",
          "--enable-config"
         },
         capabilities = capabilities,
+        root_markers = { "compile_commands.json", ".clangd", ".git" },
         init_options = {
           clangdFileStatus = true,
           usePlaceholders = true,
           completeUnimported = true,
           semanticHighlighting = true,
         },
-        handlers = clangd_ext_handler,
         filetypes = { "c", "cpp", "hpp", "h"}
       })
       vim.lsp.enable('clangd')
@@ -181,14 +183,68 @@
       vim.lsp.config('nixd', { capabilities = nixd_capabilities })
       vim.lsp.enable('nixd')
 
+      -- rust-analyzer setup
+      vim.lsp.config('rust_analyzer', {
+        capabilities = capabilities,
+        settings = {
+          ['rust-analyzer'] = {
+            checkOnSave = { command = "clippy" },
+            rustfmt = { extraArgs = {} },
+          },
+        },
+      })
+      vim.lsp.enable('rust_analyzer')
+
+      -- jsonls setup
+      vim.lsp.config('jsonls', {
+        capabilities = capabilities,
+      })
+      vim.lsp.enable('jsonls')
+
+      -- yamlls setup
+      vim.lsp.config('yamlls', {
+        capabilities = capabilities,
+      })
+      vim.lsp.enable('yamlls')
+
+      -- taplo (TOML) setup
+      vim.lsp.config('taplo', {
+        capabilities = capabilities,
+      })
+      vim.lsp.enable('taplo')
+
+      -- buf_ls (Protobuf) setup
+      vim.lsp.config('buf_ls', {
+        capabilities = capabilities,
+      })
+      vim.lsp.enable('buf_ls')
+
+      -- sqls setup
+      vim.lsp.config('sqls', {
+        capabilities = capabilities,
+      })
+      vim.lsp.enable('sqls')
+
+      -- Disable formatting for all LSPs except nixd and rust_analyzer
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client == nil then return end
+          if client.name ~= 'nixd' and client.name ~= 'rust_analyzer' then
+            client.server_capabilities.documentFormattingProvider = false
+            client.server_capabilities.documentRangeFormattingProvider = false
+          end
+        end,
+      })
+
       -- LspAttach autocmd for on_attach functionality
       vim.api.nvim_create_autocmd('LspAttach', {
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client == nil then return end
 
-          -- Attach navic for clangd
-          if client.name == 'clangd' then
+          -- Attach navic for clangd and rust_analyzer
+          if client.name == 'clangd' or client.name == 'rust_analyzer' then
             navic.attach(client, args.buf)
           end
 
@@ -357,7 +413,13 @@
       telescope-nvim
       telescope-live-grep-args-nvim
       telescope-lsp-handlers-nvim
-      lsp-status-nvim
+      {
+        plugin = fidget-nvim;
+        type = "lua";
+        config = ''
+          require("fidget").setup({})
+        '';
+      }
       {
         plugin = lsp_signature-nvim;
         type = "lua";
@@ -454,9 +516,6 @@
           null_ls.setup({
               debug = false;
               sources = {
-              -- C/C++
-              null_ls.builtins.diagnostics.cppcheck,
-
               -- Spelling
               -- null_ls.builtins.completion.spell,
               null_ls.builtins.diagnostics.codespell.with({
@@ -507,8 +566,26 @@
       clang-tools
       #cppcheck
 
+      # Rust
+      rust-analyzer
+
       # Shell scripting
       nodePackages.bash-language-server
+
+      # JSON
+      nodePackages.vscode-langservers-extracted
+
+      # YAML (included in vscode-langservers-extracted, but explicit for clarity)
+      yaml-language-server
+
+      # TOML
+      taplo
+
+      # Protobuf
+      buf
+
+      # SQL
+      sqls
 
       # Additional
       codespell
