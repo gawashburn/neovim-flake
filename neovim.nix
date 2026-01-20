@@ -292,6 +292,19 @@
          theme = "OceanicNext",
          globalstatus = true
        },
+       sections = {
+         lualine_x = {
+           {
+             require("noice").api.status.mode.get,
+             cond = require("noice").api.status.mode.has,
+             color = { fg = "#ff9e64" },
+           },
+           {
+             require("noice").api.status.command.get,
+             cond = require("noice").api.status.command.has,
+           },
+         },
+       },
        winbar = {
          lualine_a = { function ()
            if navic.is_available() then
@@ -327,6 +340,73 @@
     (with pkgs.unstable.vimPlugins; [
      # None yet
     ]) ++ (with pkgs.vimPlugins; [
+      # Screenkey for prominent keystroke display
+      {
+        plugin = pkgs.vimUtils.buildVimPlugin {
+          name = "screenkey-nvim";
+          src = pkgs.fetchFromGitHub {
+            owner = "NStefan002";
+            repo = "screenkey.nvim";
+            rev = "v2.4.2";
+            sha256 = "sha256-EGyIkWcQbCurkBbeHpXvQAKRTovUiNx1xqtXmQba8Gg=";
+          };
+        };
+        type = "lua";
+        config = ''
+          require("screenkey").setup({
+            win_opts = {
+              row = 1,
+              col = vim.o.columns / 2,
+              relative = "editor",
+              anchor = "NE",
+              width = 40,
+              height = 1,
+              border = "rounded",
+            },
+            clear_after = 3,
+            group_mappings = true,
+          })
+        '';
+      }
+      # Noice UI and dependencies
+      nui-nvim
+      nvim-notify
+      {
+        plugin = noice-nvim;
+        type = "lua";
+        config = ''
+          require("noice").setup({
+            lsp = {
+              override = {
+                ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+                ["vim.lsp.util.stylize_markdown"] = true,
+                ["cmp.entry.get_documentation"] = true,
+              },
+            },
+            presets = {
+              bottom_search = true,
+              command_palette = true,
+              long_message_to_split = true,
+              lsp_doc_border = true,
+            },
+            routes = {
+              { filter = { event = "msg_show", kind = "", find = "written" }, opts = { skip = true } },
+              { view = "split", filter = { event = "msg_show", min_height = 20 } },
+            },
+          })
+
+          -- LSP hover doc scrolling
+          vim.keymap.set({ "n", "i", "s" }, "<c-f>", function()
+            if not require("noice.lsp").scroll(4) then return "<c-f>" end
+          end, { silent = true, expr = true })
+          vim.keymap.set({ "n", "i", "s" }, "<c-b>", function()
+            if not require("noice.lsp").scroll(-4) then return "<c-b>" end
+          end, { silent = true, expr = true })
+
+          -- Dismiss notifications
+          vim.keymap.set("n", "<leader>nd", "<cmd>Noice dismiss<cr>", { desc = "Dismiss notifications" })
+        '';
+      }
       camelcasemotion
       vim-easymotion
       vim-highlightedyank
