@@ -89,7 +89,7 @@
       '';
 
     # Work around so that neovim can find the treesitter plugins.
-    extraLuaConfig = let
+    initLua = let
       parsers = pkgs.tree-sitter.withPlugins (_: pkgs.tree-sitter.allGrammars);
     in
       ''
