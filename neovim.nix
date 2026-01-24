@@ -82,10 +82,7 @@
 
       let g:camelcasemotion_key = '<leader>'
 
-      " Fix this should be moved to a per host configuration.
-      let g:oceanic_next_terminal_bold = 1
-      let g:oceanic_next_terminal_italic = 1
-      colorscheme OceanicNext
+      colorscheme rose-pine-moon
       '';
 
     # Work around so that neovim can find the treesitter plugins.
@@ -289,7 +286,7 @@
      -- Status bar configuration
      require('lualine').setup {
        options = {
-         theme = "OceanicNext",
+         theme = "rose-pine",
          globalstatus = true
        },
        sections = {
@@ -410,7 +407,7 @@
       camelcasemotion
       vim-easymotion
       vim-highlightedyank
-      oceanic-next
+      rose-pine
       lsp-colors-nvim
       nvim-treesitter.withAllGrammars
       # Comment/uncomment helper
